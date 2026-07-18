@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-18 16:02:01
+ * @LastEditTime: 2026-07-18 16:47:34
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -58,8 +58,8 @@ void gimbal_init(void)
             {
                 .algorithm_type        = CONTROL_LQR,
                 .feedback_reverse_flag = 0,
-                .angle_feedback_source = 1,
-                .speed_feedback_source = 1,
+                .angle_feedback_source = 0,
+                .speed_feedback_source = 0,
                 .loop_type             = ANGLE_LOOP,
             },
         .motor_init_info = {.motor_type = GM6020_CURRENT, .gear_ratio = 1, .max_torque = 2.223f, .torque_constant = 0.741f}};
@@ -89,7 +89,7 @@ void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
         }
     }
     // 数据反馈
-    if (!Module_Offline_get_device_status(yaw_motor->base.offline_dev) && yaw_ecd != NULL)
+    if ( yaw_ecd != NULL)
     {
         *yaw_ecd = yaw_motor->measure.ecd;
     }
