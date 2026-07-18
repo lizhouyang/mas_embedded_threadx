@@ -1,8 +1,8 @@
 /*
  * @Author: laladuduqq 2807523947@qq.com
  * @Date: 2026-05-05 22:15:45
- * @LastEditors: laladuduqq 2807523947@qq.com
- * @LastEditTime: 2026-05-21 12:41:37
+ * @LastEditors: 陈冠宁 635936689@qq.com
+ * @LastEditTime: 2026-07-18 15:52:18
  * @FilePath: /mas_embedded_threadx/board/bsp/CAN/bsp_can.h
  * @Description: CAN BSP 公共接口与内部类型
  */

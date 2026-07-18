@@ -90,4 +90,7 @@ typedef struct
     float          offset_angle;
     chassis_mode_e chassis_mode;
 } Chassis_Ctrl_Cmd_t;
+
+#pragma pack()  /* 恢复默认对齐 */
+
 #endif // _INFANTRY_DEF_H_

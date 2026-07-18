@@ -1,8 +1,16 @@
+/*
+ * @Author: 陈冠宁 635936689@qq.com
+ * @Date: 2026-07-17 18:55:11
+ * @LastEditors: 陈冠宁 635936689@qq.com
+ * @LastEditTime: 2026-07-18 10:58:02
+ * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_control.c
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #include "robot_control.h"
-#include "referee_protocol.h"
-#include "module_referee.h"
-#include "module_ins.h"
-#include "module_vision.h"
+//#include "referee_protocol.h"
+//#include "module_referee.h"
+//#include "module_ins.h"
+//#include "module_vision.h"
 #include "tx_api.h"
 #include "bsp_def.h"
 #include "infantry_def.h"
@@ -43,7 +51,7 @@ void robot_control_init(void)
 
     gimbal_init();
     
-    status = tx_thread_create(&robot_control_thread, "robot_control_thread", robot_control_task, 0, robot_control_thread_stack, 1024, 30, 30,
+    status = tx_thread_create(&robot_control_thread, "robot_control_thread", robot_control_task, 0, robot_control_thread_stack, 1024, 10, 10,
                               TX_NO_TIME_SLICE, TX_AUTO_START);
     if (status != TX_SUCCESS)
     {

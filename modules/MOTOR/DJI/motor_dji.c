@@ -207,8 +207,8 @@ static UINT MotorSenderGrouping(DJI_Motor_t *motor, Can_Device_Init_Config_s *co
     uint8_t motor_send_num;
     uint8_t motor_grouping;
     UINT    status = TX_SUCCESS;
-
-    switch (motor->base.info.motor_type)
+    //switch (motor->base.info.motor_type)
+    switch (motor->base.type)
     {
     case M2006:
     case M3508:
