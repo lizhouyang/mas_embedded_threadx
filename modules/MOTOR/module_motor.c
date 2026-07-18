@@ -15,7 +15,7 @@ static void motor_task_entry(ULONG thread_input)
     while (1)
     {
         Motor_UpdateAll();
-        PowerControl_Update();
+        //PowerControl_Update();
         Motor_DJI_Flush();
         tx_thread_sleep(2);
     }
