@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-18 19:20:00
+ * @LastEditTime: 2026-07-19 16:41:38
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -68,8 +68,8 @@ void gimbal_init(void)
                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[2],
                                    .lqr_init =
                                        {
-                                           .K         = {0.2f},
-                                           .state_dim = 1,
+                                           .K         = {5.47f, 0.56f},
+                                           .state_dim = 2,
                                        }},
         .setting_init_config =
             {
@@ -106,8 +106,8 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
                                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[0], // c板的pitch轴角速度，根据实际选择对应角速度
                                                 .lqr_init =
                                                     {
-                                                        .K         = {0.6f}, // 28.7312f,2.5974f
-                                                        .state_dim = 1,
+                                                        .K         = {5.47f, 0.56f}, // 28.7312f,2.5974f
+                                                        .state_dim = 2,
                                                     },
                                             },
                                         .setting_init_config =
@@ -132,21 +132,25 @@ void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
     {
         if (!Module_Offline_get_device_status(yaw_motor->base.offline_dev) 
     && !Module_Offline_get_device_status(pitch_motor->base.offline_dev))
+{
+    if (gimbal_cmd->gimbal_mode == gimbal_zero_force)
+        {
+            Motor_DJI_Stop(yaw_motor);
+            Motor_DM_Stop(pitch_motor);
+            
+        }
+    else
         {
             Motor_DJI_Start(yaw_motor);
             Motor_DJI_SetRef(yaw_motor, (gimbal_cmd->yaw * DEGREE_2_RAD));
            Motor_DM_Start(pitch_motor);
            Motor_DM_SetRef(pitch_motor, gimbal_cmd->pitch * DEGREE_2_RAD);
         }
-        else
-        {
-            Motor_DJI_Stop(yaw_motor);
-            Motor_DM_Stop(pitch_motor);
-        }
-    }
+}
     // 数据反馈
     if (!Module_Offline_get_device_status(yaw_motor->base.offline_dev) && yaw_ecd != NULL)
     {
         *yaw_ecd = yaw_motor->measure.ecd;
+    }
     }
 }

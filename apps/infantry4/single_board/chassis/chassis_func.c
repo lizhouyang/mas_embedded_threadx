@@ -64,7 +64,7 @@ void chassis_init(void)
     {
         return;
     }
-   
+    chassis_motor_config.transport_config.can.tx_id             = 3;
     chassis_motor_config.setting_init_config.motor_reverse_flag = 1;
     chassis_motor_config.offline_init_config.name               = "m3508_3";
     chassis_motor_config.offline_init_config.beep_times         = 3;
@@ -92,12 +92,40 @@ void chassis_func(Chassis_Ctrl_Cmd_t *chassis_cmd)
             !Module_Offline_get_device_status(chassis_motors[1]->base.offline_dev) &&
             !Module_Offline_get_device_status(chassis_motors[2]->base.offline_dev) &&
             !Module_Offline_get_device_status(chassis_motors[3]->base.offline_dev))
+            {if (chassis_cmd->chassis_mode == chassis_zero_force)
+            {
+                Motor_DJI_Stop(chassis_motors[0]);
+                Motor_DJI_Stop(chassis_motors[1]);
+                Motor_DJI_Stop(chassis_motors[2]);
+                Motor_DJI_Stop(chassis_motors[3]);
+            }
+            else
             {
                 Motor_DJI_Start(chassis_motors[0]);
                 Motor_DJI_Start(chassis_motors[1]);
                 Motor_DJI_Start(chassis_motors[2]);
+                Motor_DJI_Start(chassis_motors[3]);
             }
 
+                
+            
+
+             // 根据控制模式设定旋转速度
+            switch (chassis_cmd->chassis_mode)
+            {
+            case chassis_rotate_reverse: // 自旋反转,同时保持全向机动
+                chassis_wz = -0.5f;
+                break;
+            case chassis_follow_gimbal_yaw: // 跟随云台
+                PIDCalculate(&chassis_follow_pid, chassis_cmd->offset_angle, 0);
+                chassis_wz = chassis_follow_pid.Output;
+                break;
+            case chassis_rotate: // 自旋,同时保持全向机动
+                chassis_wz = 0.5f;
+                break;
+            default:
+                break;
+            }
             // 根据云台和底盘的角度offset将控制量映射到底盘坐标系上
             // 底盘逆时针旋转为角度正方向;云台命令的方向以云台指向的方向为x,采用右手系
             static float sin_theta, cos_theta;
@@ -109,6 +137,7 @@ void chassis_func(Chassis_Ctrl_Cmd_t *chassis_cmd)
 
             Chassis_Mecanum_Calc(chassis_motors, &chassis_diff_config, chassis_vx, chassis_vy, chassis_wz);
         }
+    }
         else
         {
             Motor_DJI_Stop(chassis_motors[0]);

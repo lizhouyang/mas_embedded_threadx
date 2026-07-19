@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 18:55:11
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-19 09:24:47
+ * @LastEditTime: 2026-07-19 11:34:16
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_control.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -37,12 +37,15 @@ static void robot_control_task(ULONG thread_input)
     {
         /* 遥控器控制输入 */
         RemoteControlSet(&chassis_cmd,&gimbal_cmd);
-
-        /* 底盘控制 */
-        chassis_func(&chassis_cmd);
-        
         /* 云台控制 */
         gimbal_func(&gimbal_cmd, &yaw_ecd);
+        /* 底盘控制 */
+        
+        chassis_cmd.offset_angle = CalcOffsetAngle(yaw_ecd) * 360.0f / 8191.0f;
+        chassis_cmd.vx           = chassis_cmd.vx * CHASSIS_MAX_SPEED_MPS;
+        chassis_cmd.vy           = chassis_cmd.vy * CHASSIS_MAX_SPEED_MPS;
+        chassis_cmd.wz           = chassis_cmd.wz * CHASSIS_MAX_SPEED_MPS;
+        chassis_func(&chassis_cmd);
       
         tx_thread_sleep(2);
     }

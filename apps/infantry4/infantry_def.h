@@ -11,7 +11,7 @@
 // ── 云台参数 ──
 #define PITCH_MAX_ANGLE           40.0f     /* 云台竖直最大角度 (度) */
 #define PITCH_MIN_ANGLE           -20.0f    /* 云台竖直最小角度 (度) */
-#define YAW_CHASSIS_ALIGN_ECD     2048      /* yaw与底盘对齐时的电机编码器值, 机械改动后需修改 */
+#define YAW_CHASSIS_ALIGN_ECD     3917      /* yaw与底盘对齐时的电机编码器值, 机械改动后需修改 */
 
 // ── 底盘参数 ──
 #define CHASSIS_MAX_SPEED_MPS     3.0f      /* 底盘最大线速度 (m/s), 遥控满杆映射到此值       */

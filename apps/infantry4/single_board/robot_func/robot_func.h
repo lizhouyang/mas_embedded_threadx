@@ -10,6 +10,6 @@
 #define _ROBOT_FUNC_H_
 #include "infantry_def.h" 
 void RemoteControlSet( Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl);
-
+int16_t CalcOffsetAngle(float getyawangle);
 #endif // _ROBOT_FUNC_H_
 
