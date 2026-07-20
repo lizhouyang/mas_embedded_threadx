@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 20:21:52
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-19 16:37:11
+ * @LastEditTime: 2026-07-19 20:37:17
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_func\robot_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,9 +26,10 @@ int ch1=0;
 int ch2=0;
 int ch5=0;
 int ch6=0;
-void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl)
+int ch8=0;
+void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl, Shoot_Ctrl_Cmd_t *Shoot_Ctrl)
 {
-    if (!Gimbal_Ctrl || !Chassis_Ctrl) return;
+    if (!Gimbal_Ctrl || !Chassis_Ctrl || !Shoot_Ctrl) return;
     
     uint8_t state = Module_Remote_get_offline_status();
 
@@ -40,18 +41,19 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
         ch4 = Module_Remote_get_channel(4);
         ch5 = Module_Remote_get_channel(5);  
         ch6 = Module_Remote_get_channel(6);
-        
-        if (ch6 < 500)  //
+        ch8 = Module_Remote_get_channel(8);
+        if (ch6 < 500)  //左二上拨,云台底盘发射机构都不动
         {
             Chassis_Ctrl->chassis_mode = chassis_zero_force;
             Gimbal_Ctrl->gimbal_mode   = gimbal_zero_force;
+            Shoot_Ctrl->shoot_mode = shoot_off;
         }
-        else if (ch6 > 500 && ch6 < 1500)  // 
+        else if (ch6 > 500 && ch6 < 1500)  // 中间，云台动，底盘不动
         {
             Chassis_Ctrl->chassis_mode = chassis_zero_force;
             Gimbal_Ctrl->gimbal_mode   = gimbal_gyro_mode;
         }
-        else if (ch6 > 1500)  
+        else if (ch6 > 1500)  // 云台动，底盘动，底盘选模式
         {
             Gimbal_Ctrl->gimbal_mode   = gimbal_gyro_mode;
             if (ch5 > 1500)  
@@ -68,6 +70,26 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
             }
         }
         
+        if (ch8 < 500)  // 右二上拨射击模式关闭
+        {
+            Shoot_Ctrl->shoot_mode = shoot_off;
+            Shoot_Ctrl->friction_mode = friction_off;
+            Shoot_Ctrl->load_mode = load_stop;
+        }
+        else if (ch8 < 1500)  // 中间位置射击模式开启(单发)
+        {
+            Shoot_Ctrl->shoot_mode = shoot_on;
+            Shoot_Ctrl->friction_mode = friction_on;
+            Shoot_Ctrl->load_mode = load_1_bullet;
+        }
+        else  // 右二下拨射击模式开启(连发)
+        {
+            Shoot_Ctrl->shoot_mode = shoot_on;
+            Shoot_Ctrl->friction_mode = friction_on;
+            Shoot_Ctrl->load_mode = load_1_bullet;
+            
+        }
+
         /* 摇杆 → 速度比例 (-1.0 ~ +1.0) */
         Chassis_Ctrl->vx = -(float)ch1 / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
         Chassis_Ctrl->vy = -(float)ch2 / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
@@ -81,6 +103,9 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
         Gimbal_Ctrl->pitch = 0.0f;
         Chassis_Ctrl->vx = 0.0f;
         Chassis_Ctrl->vy = 0.0f;
+        Shoot_Ctrl->shoot_mode = shoot_off;
+        Shoot_Ctrl->friction_mode = friction_off;
+        Shoot_Ctrl->load_mode = load_stop;
     }
 }
 int16_t CalcOffsetAngle(float getyawangle)
