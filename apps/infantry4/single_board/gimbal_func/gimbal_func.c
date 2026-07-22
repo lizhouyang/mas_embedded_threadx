@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-19 16:41:38
+ * @LastEditTime: 2026-07-22 09:12:08
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -68,7 +68,7 @@ void gimbal_init(void)
                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[2],
                                    .lqr_init =
                                        {
-                                           .K         = {5.47f, 0.56f},
+                                           .K         = {0.47f, 0.56f},
                                            .state_dim = 2,
                                        }},
         .setting_init_config =
@@ -106,7 +106,7 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
                                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[0], // c板的pitch轴角速度，根据实际选择对应角速度
                                                 .lqr_init =
                                                     {
-                                                        .K         = {5.47f, 0.56f}, // 28.7312f,2.5974f
+                                                        .K         = {0.47f, 0.56f}, // 28.7312f,2.5974f
                                                         .state_dim = 2,
                                                     },
                                             },
