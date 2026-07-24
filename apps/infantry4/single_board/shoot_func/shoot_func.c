@@ -7,7 +7,7 @@
 
 DJI_Motor_t *friction_l = NULL;
 DJI_Motor_t *friction_r = NULL;
-// DJI_Motor_t *loader     = NULL;  // 暂时注释，先调试摩擦轮
+DJI_Motor_t *loader     = NULL;  // 暂时注释，先调试摩擦轮
 
 void shoot_init(void)
 {
@@ -41,7 +41,7 @@ void shoot_init(void)
         .motor_init_info = {.motor_type = M3508, .gear_ratio = 19, .max_torque = 6, .torque_constant = 0.0016f},
     };
     // 左摩擦轮
-    friction_config.transport_config.can.tx_id = 6;
+    friction_config.transport_config.can.tx_id = 2;
     friction_l                                 = Motor_DJI_Init(&friction_config);
     if (friction_l == NULL)
     {
@@ -49,7 +49,7 @@ void shoot_init(void)
         return;
     }
     // 右摩擦轮
-    friction_config.transport_config.can.tx_id     = 8; // 右摩擦轮,改txid和方向就行
+    friction_config.transport_config.can.tx_id     = 3; // 右摩擦轮,改txid和方向就行
     friction_config.offline_init_config.name       = "3508_2";
     friction_config.offline_init_config.beep_times = 6;
     friction_r                                     = Motor_DJI_Init(&friction_config);
@@ -59,7 +59,7 @@ void shoot_init(void)
         return;
     }
 
-    /*// 拨盘电机 - 暂时注释，先调试摩擦轮
+    // 拨盘电机 - 暂时注释，先调试摩擦轮
     Motor_Init_Config_s loader_config = {
         .offline_init_config =
             {
@@ -101,33 +101,33 @@ void shoot_init(void)
        
         return;
     }
-    */
+    
 }
 void shoot_func(Shoot_Ctrl_Cmd_t *shoot_cmd)
 {
-    // 仅检查摩擦轮，暂时不检查拨盘
-    if (!friction_l || !friction_r) return;
+    if (!friction_l || !friction_r || !loader) return;//任一初始化失败，不进行控制
 
     if (shoot_cmd != NULL)
     {
         // 从cmd获取控制数据 - 仅检查摩擦轮离线状态
         if (!Module_Offline_get_device_status(friction_l->base.offline_dev) && 
-            !Module_Offline_get_device_status(friction_r->base.offline_dev))
+            !Module_Offline_get_device_status(friction_r->base.offline_dev) &&
+            !Module_Offline_get_device_status(loader->base.offline_dev))
         {
-            if (shoot_cmd->shoot_mode == shoot_on)
+            if (shoot_cmd->shoot_mode == shoot_on)//设置enable为1
             {
                 Motor_DJI_Start(friction_l);
                 Motor_DJI_Start(friction_r);
-                // Motor_DJI_Start(loader);  // 暂时注释，先调试摩擦轮
+                 Motor_DJI_Start(loader);  
                 
                 // 确定是否开启摩擦轮
                 if (shoot_cmd->friction_mode == friction_on)
                 {
-                    // 设置摩擦轮转速（左轮-6800RPM，右轮+6800RPM，反向旋转夹弹）
-                    Motor_DJI_SetRef(friction_l, -6800 * RPM_2_RAD_PER_SEC);
-                    Motor_DJI_SetRef(friction_r, 6800 * RPM_2_RAD_PER_SEC);
+                    // 设置摩擦轮转速（左轮6800RPM，右轮+6800RPM，反向旋转夹弹）
+                    Motor_DJI_SetRef(friction_l, 6800 * RPM_2_RAD_PER_SEC);
+                    Motor_DJI_SetRef(friction_r, -6800 * RPM_2_RAD_PER_SEC);
                     
-                    /*// 拨盘控制 - 暂时注释，先调试摩擦轮
+                    // 拨盘控制
                     switch (shoot_cmd->load_mode)
                     {
                     case load_stop:
@@ -141,33 +141,36 @@ void shoot_func(Shoot_Ctrl_Cmd_t *shoot_cmd)
                         break;
                     default:
                         break;
-                    }*/
+                    }
                 }
                 else // 关闭摩擦轮
                 {
                     Motor_DJI_SetRef(friction_l, 0);
                     Motor_DJI_SetRef(friction_r, 0);
-                    // Motor_DJI_SetRef(loader, 0);  // 暂时注释
+                     Motor_DJI_SetRef(loader, 0);  
                 }
             }
-            else
+            else//不为发射模式，设置参考值后失能所有电机
             {
+                Motor_DJI_SetRef(friction_l, 0);
+                Motor_DJI_SetRef(friction_r, 0);
+                Motor_DJI_SetRef(loader, 0);  
                 Motor_DJI_Stop(friction_l);
                 Motor_DJI_Stop(friction_r);
-                // Motor_DJI_Stop(loader);  // 暂时注释
+                Motor_DJI_Stop(loader); 
             }
         }
-        else
+        else//任一电机掉线，失能所有电机
         {
             Motor_DJI_Stop(friction_l);
             Motor_DJI_Stop(friction_r);
-            // Motor_DJI_Stop(loader);  // 暂时注释
+            Motor_DJI_Stop(loader);  
         }
     }
-    else
+    else//接受不到指令，失能所有电机
     {
         Motor_DJI_Stop(friction_l);
         Motor_DJI_Stop(friction_r);
-        // Motor_DJI_Stop(loader);  // 暂时注释
+        Motor_DJI_Stop(loader);  
     }
 }

@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-22 09:12:08
+ * @LastEditTime: 2026-07-24 10:39:04
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -34,7 +34,9 @@ static DM_Motor_t  *pitch_motor = NULL; // pitch电机指针
 const static Ins_t           *ins        = NULL;
 const static Bmi088_device_t *bmi088_dev = NULL;
 
-static DJI_Motor_t *yaw_motor   = NULL; 
+static DJI_Motor_t *yaw_motor   = NULL;
+float ff_gravity = 0.007f;
+
 void gimbal_init(void)
 {
     ins = Module_INS_get();
@@ -68,7 +70,7 @@ void gimbal_init(void)
                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[2],
                                    .lqr_init =
                                        {
-                                           .K         = {0.47f, 0.56f},
+                                           .K         = {5.47f, 0.56f},
                                            .state_dim = 2,
                                        }},
         .setting_init_config =
@@ -106,9 +108,10 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
                                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[0], // c板的pitch轴角速度，根据实际选择对应角速度
                                                 .lqr_init =
                                                     {
-                                                        .K         = {0.47f, 0.56f}, // 28.7312f,2.5974f
+                                                        .K         = {6.32f, 0.25f}, // 28.7312f,2.5974f
                                                         .state_dim = 2,
                                                     },
+                                                    .feedforward_torque = ff_gravity,
                                             },
                                         .setting_init_config =
                                             {

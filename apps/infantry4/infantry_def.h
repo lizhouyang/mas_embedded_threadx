@@ -1,3 +1,11 @@
+/*
+ * @Author: 陈冠宁 635936689@qq.com
+ * @Date: 2026-07-17 18:49:20
+ * @LastEditors: 陈冠宁 635936689@qq.com
+ * @LastEditTime: 2026-07-23 20:43:48
+ * @FilePath: \mas_embedded_threadx\apps\infantry4\infantry_def.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 #ifndef _INFANTRY_DEF_H_
 #define _INFANTRY_DEF_H_
 
@@ -9,9 +17,9 @@
 // clang-format off
 
 // ── 云台参数 ──
-#define PITCH_MAX_ANGLE           40.0f     /* 云台竖直最大角度 (度) */
-#define PITCH_MIN_ANGLE           -20.0f    /* 云台竖直最小角度 (度) */
-#define YAW_CHASSIS_ALIGN_ECD     3917      /* yaw与底盘对齐时的电机编码器值, 机械改动后需修改 */
+#define PITCH_MAX_ANGLE           35.0f     /* 云台竖直最大角度 (度) */
+#define PITCH_MIN_ANGLE           -15.0f    /* 云台竖直最小角度 (度) */
+#define YAW_CHASSIS_ALIGN_ECD     1869      /* yaw与底盘对齐时的电机编码器值, 机械改动后需修改 */
 
 // ── 底盘参数 ──
 #define CHASSIS_MAX_SPEED_MPS     3.0f      /* 底盘最大线速度 (m/s), 遥控满杆映射到此值       */

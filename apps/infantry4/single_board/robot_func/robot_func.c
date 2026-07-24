@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 20:21:52
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-19 20:37:17
+ * @LastEditTime: 2026-07-23 16:46:55
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_func\robot_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -46,7 +46,6 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
         {
             Chassis_Ctrl->chassis_mode = chassis_zero_force;
             Gimbal_Ctrl->gimbal_mode   = gimbal_zero_force;
-            Shoot_Ctrl->shoot_mode = shoot_off;
         }
         else if (ch6 > 500 && ch6 < 1500)  // 中间，云台动，底盘不动
         {
@@ -76,10 +75,10 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
             Shoot_Ctrl->friction_mode = friction_off;
             Shoot_Ctrl->load_mode = load_stop;
         }
-        else if (ch8 < 1500)  // 中间位置射击模式开启(单发)
+        else if (ch8 < 1500)  // 中间位置射击模式开启
         {
             Shoot_Ctrl->shoot_mode = shoot_on;
-            Shoot_Ctrl->friction_mode = friction_on;
+            Shoot_Ctrl->friction_mode = friction_off;
             Shoot_Ctrl->load_mode = load_1_bullet;
         }
         else  // 右二下拨射击模式开启(连发)
