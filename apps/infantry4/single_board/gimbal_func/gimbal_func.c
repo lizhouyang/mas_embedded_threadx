@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-24 10:39:04
+ * @LastEditTime: 2026-07-26 11:27:32
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -111,7 +111,7 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
                                                         .K         = {6.32f, 0.25f}, // 28.7312f,2.5974f
                                                         .state_dim = 2,
                                                     },
-                                                    .feedforward_torque = ff_gravity,
+                                                    
                                             },
                                         .setting_init_config =
                                             {
@@ -120,9 +120,11 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
                                                 .angle_feedback_source = 1,
                                                 .speed_feedback_source = 1,
                                                 .loop_type             = ANGLE_LOOP,
+                                                .motor_reverse_flag    = 1,
                                             },
                                         .motor_init_info = {.motor_type = DM4310, .gear_ratio = 10, .max_torque = 10, .torque_constant = 0.093f}};
     pitch_motor                      = Motor_DM_Init(&pitch_config, DM_MIT_MODE);
+    pitch_motor->base.controller.feedforward_torque = ff_gravity;  
     if (pitch_motor == NULL)
     {
         return;
