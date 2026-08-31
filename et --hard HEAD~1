@@ -1,0 +1,95 @@
+[33ma717944[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mexp/步兵4[m[33m)[m 还差视觉
+[33m07647e7[m 增加重力补偿
+[33mbe1212e[m 回退后
+[33m4a63c2f[m 摩擦轮只转一个，p轴太慢
+[33me418882[m 底盘加云台完成
+[33m964cace[m 底盘初步
+[33mee7033f[m 取反完毕
+[33m106edd0[m 云台动了，但方向有点呃呃
+[33m8c4c3c9[m 能动了
+[33m422e2e8[m 成功
+[33m057bb21[m 遥控器
+[33m66a0d8a[m yaw轴电机
+[33m0b3a6dc[m Revert "Dev (#8)"
+[33m7ed6c66[m Dev (#8)
+[33m9bdc40e[m ci:测试自动合并
+[33md1749fe[m ci: 触发 auto-merge workflow 测试
+[33mcdd9494[m ci: 添加 dev 自动合并到 dev-systemview 的 workflow (#7)
+[33maa8fa5e[m ci: 添加 dev 自动合并到 dev-systemview 的 workflow
+[33mfdcc197[m 反向合并解决问题 (#6)
+[33m6686a64[m feat(sentry_gimbal):加入了重力补偿 (#5)
+[33m19abf4d[m feat(sentry_gimbal):加入了重力补偿
+[33m978d31b[m fix(module-vision):解决了minipc掉线问题 (#4)
+[33m71cee5e[m fix(module-vision):解决了minipc掉线问题
+[33m0495c3e[m[33m ([m[1;31morigin/feat/cmake结构优化[m[33m)[m feat:添加了CI自动化编译 (#3)
+[33m57132ed[m feat:添加了CI自动化编译
+[33m4c95c46[m Add badge and update project description in README
+[33m564e4c5[m feat(app-infantry3):修改步兵参数
+[33m5e34c51[m fix(module):修复offline_enable宏定义
+[33m5de4b71[m Dev (#2)
+[33m2bb623c[m feat(modules):增加offline的使能控制
+[33m13fd24d[m feat(app-template/infantry3):增加app层模板与单板步兵控制
+[33mca0be50[m fix(module-remote):增加遥控器数据多帧解析
+[33mb57136f[m fix(modules-damiao):修复达妙电机解码圈数
+[33me36dcc4[m Dev merge (#1)
+[33m370d762[m fix(app-sentry):完善哨兵
+[33ma1bf08a[m fix(modules-motor):修复功率控制，增加指针检查
+[33m6ffb08d[m fix(module-referee):优化裁判系统发送
+[33mf848dd9[m fix(module-lqr)：移除电机保护
+[33md0d5354[m fix(module-referee/remote/vision/wt606):适配最新bsp_uart
+[33m8ae2dd8[m fix(bsp-uart/bsp)：修复接收buf可能存在的溢出问题
+[33m72a33dc[m remove(app)：移除多余message
+[33m07e4841[m fix(app-sentry):修复sentry
+[33m8ac4c70[m fix(module-powercontrol):只支持dji电机
+[33m60f1ebe[m fix(module-lqr):优化lqr电机保护
+[33md6489aa[m fix(module-wt606):修复wt606数据接收问题
+[33m9050e7a[m fix(module-lqr):修复电机保护
+[33m828f109[m fix(app-sentry):修复sbus遥控器
+[33m75f479e[m fix(module-boardcomm):适配最新bspcan
+[33mf6954ca[m refactor(module-motor):使用单向链表，方便调试
+[33ma65ffaf[m refactor(module-offline):使用单向链表，方便调试
+[33m7621635[m remove(utils-list)：移除链表
+[33m048f3c7[m fix(bsp-can)：修复can task无法挂起问题
+[33mce9ea91[m refactor(bsp-can):重构can
+[33ma1cbf0f[m rafactor(bsp-pwm):使用单向链表，方便调试
+[33m2d9926f[m refactor(bsp-i2c):使用单向链表，方便维护
+[33ma176a11[m refactor(bsp-spi):使用单向链表，方便调试
+[33m0c3367d[m feat(module-offline):增加调试输出
+[33m3b3079b[m feat(app-sentry):添加哨兵底盘和云台控制 - 添加 chassis_type 模块，支持转向、麦克纳姆和全向轮，包含正向和逆向求解器，并集成里程计功能。
+[33me58c04f[m fix（module-boardcomm）：修复send函数传参不匹配问题
+[33m669de09[m refactor（algorithm-lqr）：增加电机保护功能
+[33m9cfc2a6[m fix(module-motor):修复离线失能问题 - 增加前馈力矩补偿
+[33m7705c1c[m refactor（modules-boardcomm）：重构板间通讯
+[33m3f3e993[m fix（vision）：修复vison参数缺少问题 - 增加app初始化和链接module_config.h
+[33m6f9b48f[m fix(module-remote):将dt7/vt03独有部分独立，方便调用
+[33m18de6f0[m refactor(usb)：重构vision,单独线程接收处理
+[33m051e241[m fix(modules):补充modules离线状态检测函数
+[33m1168fba[m refactor(bsp-usb):重构usb_user send read逻辑
+[33m62b5b4c[m refactor(boardcomm)：只负责收发原始数据，数据处理由robot管理
+[33me50a433[m refactor(generate_module_cmake):重构了生成module_config和robot_def方法
+[33m1a2ddbc[m docs(readme):增加readme文档
+[33me17ca6f[m feat(module/app):增加module与app层
+[33m84fa000[m feat(bsp-can):增加can通用句柄
+[33m93df438[m debug(project):移除lto参数，方便debug
+[33m2fad7c1[m feat(bsp):完整bsp支持
+[33mb720019[m fix(cmake):补全.cmake文件，修复文件缺失问题
+[33me46ff30[m perf(project):统一开启lto加o2/o3优化，提高性能
+[33m3cf65a9[m feat(cherryusb):增加cherryusb组件包支持
+[33mfac4021[m feat(threadx):将threadx库，开启o3优化
+[33ma7b7102[m feat(cmsis-dsp):增加dsp运算库
+[33m92df4e4[m feat(utils-kfifo):增加环形缓冲区功能
+[33m4fe70e7[m feat(utils):增加无锁链表功能 - 移除lwrb - 增加.clangd，处理clangd报错问题
+[33m67633b5[m feat(byte_pool):将内存池统一在robot init中初始化
+[33m7e40eb6[m feat(project):更新vscode/zed 支持linux下task
+[33md9e23a1[m fix(project):更新工程，修复文件依赖问题
+[33m5c3fd95[m feat(board):移除cubemx 虚拟串口软件包 - 将所有uart rx dma改为循环模式
+[33ma82fd81[m chore(project):更新vscode和zed 配置文件
+[33mf9dc160[m feat(board-h7):增加i2c
+[33ma8ee6c1[m feat(board-vcom):增加虚拟串口功能
+[33mbc8985f[m feat(board-h7):增加flash内存区域分配
+[33m675cdfe[m feat(bsp-dwt):增加dwt功能
+[33me369ca3[m chore(clang-tidy):修改clang-tidy，移除多余报错
+[33m0976e33[m feat(bsp):添加bsp初始化
+[33mb290d6a[m feat(log):统一依赖文件，使用eyalroz/printf替换标准函数
+[33mafc9eb8[m feat(project)：增加threadx rtos支持 - 增加robot_init 初始化 - utils 增加 rtt log lwrb 功能组件
+[33m10e9a51[m feat(project):初始化工程

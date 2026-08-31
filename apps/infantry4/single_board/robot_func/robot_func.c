@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 20:21:52
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-26 11:27:54
+ * @LastEditTime: 2026-08-31 20:50:05
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_func\robot_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -88,7 +88,7 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
 
         /* 摇杆 → 速度比例 (-1.0 ~ +1.0) */
         Chassis_Ctrl->vx = -(float)ch[1] / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
-        Chassis_Ctrl->vy = -(float)ch[2] / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
+        Chassis_Ctrl->vy = (float)ch[2] / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
         Gimbal_Ctrl->yaw -= 0.0003f * (float)(ch[4]);
         Gimbal_Ctrl->pitch -= 0.001f * (float)(ch[3]);
         VAL_LIMIT(Gimbal_Ctrl->pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);

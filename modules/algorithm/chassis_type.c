@@ -112,8 +112,8 @@ void Chassis_Mecanum_Calc(DJI_Motor_t *motors[4], const Chassis_Diff_Config_s *c
     const float speed_factor = cfg->decele_ratio / cfg->wheel_radius;
 
     float wheel_speed[4];
-    wheel_speed[0] = (+vx - vy - vw * L) * speed_factor;
-    wheel_speed[3] = (+vx + vy + vw * L) * speed_factor;
+    wheel_speed[0] = (+vx + vy - vw * L) * speed_factor;
+    wheel_speed[3] = (+vx - vy + vw * L) * speed_factor;
     wheel_speed[1] = (+vx + vy - vw * L) * speed_factor;
     wheel_speed[2] = (+vx - vy + vw * L) * speed_factor;
 
