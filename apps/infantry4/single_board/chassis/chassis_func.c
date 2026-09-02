@@ -45,8 +45,8 @@ void chassis_init(void)
     };
 
 
-    chassis_motor_config.transport_config.can.tx_id             = 1;
-    chassis_motor_config.setting_init_config.motor_reverse_flag = 0;
+    chassis_motor_config.transport_config.can.tx_id             = 4;//1
+    chassis_motor_config.setting_init_config.motor_reverse_flag = 1;
     chassis_motor_config.offline_init_config.name               = "m3508_1";
     chassis_motor_config.offline_init_config.beep_times         = 1;
     chassis_motors[0]                                           = Motor_DJI_Init(&chassis_motor_config);
@@ -55,8 +55,8 @@ void chassis_init(void)
         return;
     }
    
-    chassis_motor_config.transport_config.can.tx_id             = 2;
-    chassis_motor_config.setting_init_config.motor_reverse_flag = 0;
+    chassis_motor_config.transport_config.can.tx_id             = 1;//2
+    chassis_motor_config.setting_init_config.motor_reverse_flag = 1;
     chassis_motor_config.offline_init_config.name               = "m3508_2";
     chassis_motor_config.offline_init_config.beep_times         = 2;
     chassis_motors[1]                                           = Motor_DJI_Init(&chassis_motor_config);
@@ -64,8 +64,8 @@ void chassis_init(void)
     {
         return;
     }
-    chassis_motor_config.transport_config.can.tx_id             = 3;
-    chassis_motor_config.setting_init_config.motor_reverse_flag = 1;
+    chassis_motor_config.transport_config.can.tx_id             = 2;//3
+    chassis_motor_config.setting_init_config.motor_reverse_flag = 0;
     chassis_motor_config.offline_init_config.name               = "m3508_3";
     chassis_motor_config.offline_init_config.beep_times         = 3;
     chassis_motors[2]                                           = Motor_DJI_Init(&chassis_motor_config);
@@ -74,8 +74,8 @@ void chassis_init(void)
         return;
     }
 
-    chassis_motor_config.transport_config.can.tx_id             = 4;
-    chassis_motor_config.setting_init_config.motor_reverse_flag = 1;
+    chassis_motor_config.transport_config.can.tx_id             = 3;//4
+    chassis_motor_config.setting_init_config.motor_reverse_flag = 0;
     chassis_motor_config.offline_init_config.name               = "m3508_4";
     chassis_motor_config.offline_init_config.beep_times         = 4;
     chassis_motors[3]                                           = Motor_DJI_Init(&chassis_motor_config);
@@ -118,7 +118,7 @@ void chassis_func(Chassis_Ctrl_Cmd_t *chassis_cmd)
                 break;
             case chassis_follow_gimbal_yaw: // 跟随云台
                 PIDCalculate(&chassis_follow_pid, chassis_cmd->offset_angle, 0);
-                chassis_wz = chassis_follow_pid.Output;
+                chassis_wz = -chassis_follow_pid.Output;
                 break;
             case chassis_rotate: // 自旋,同时保持全向机动
                 chassis_wz = 0.5f;
