@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 20:21:52
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-01 20:18:06
+ * @LastEditTime: 2026-09-02 20:38:04
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_func\robot_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -95,17 +95,18 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
     }
     else  // 遥控器离线
     {
-        Chassis_Ctrl->chassis_mode = chassis_zero_force;
-        Gimbal_Ctrl->gimbal_mode   = gimbal_zero_force;
-        Gimbal_Ctrl->yaw = 0.0f;
+        /*Gimbal_Ctrl->yaw = 0.0f;
         Gimbal_Ctrl->pitch = 0.0f;
         Chassis_Ctrl->vx = 0.0f;
         Chassis_Ctrl->vy = 0.0f;
-        Chassis_Ctrl->wz = 0.0f;
-        Chassis_Ctrl->offset_angle = 0.0f;
         Shoot_Ctrl->shoot_mode = shoot_off;
         Shoot_Ctrl->friction_mode = friction_off;
-        Shoot_Ctrl->load_mode = load_stop;
+        Shoot_Ctrl->load_mode = load_stop;*/
+        Gimbal_Ctrl->gimbal_mode   = gimbal_zero_force;
+        Chassis_Ctrl->chassis_mode = chassis_zero_force;
+        Shoot_Ctrl->shoot_mode     = shoot_off;
+        Shoot_Ctrl->friction_mode  = friction_off;
+        Shoot_Ctrl->load_mode      = load_stop;
     }
 }
 int16_t CalcOffsetAngle(float getyawangle)

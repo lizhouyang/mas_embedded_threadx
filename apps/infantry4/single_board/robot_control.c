@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 18:55:11
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-25 20:17:37
+ * @LastEditTime: 2026-09-02 19:29:33
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_control.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,8 +18,8 @@
 #include "shoot_func.h"
 #include "chassis_func.h"
 #include "robot_func.h"
-#include "module_vision.h"
-#include "module_ins.h"
+//#include "module_vision.h"
+//#include "module_ins.h"
 
 
 
@@ -32,9 +32,9 @@ static Chassis_Ctrl_Cmd_t chassis_cmd;
 static Shoot_Ctrl_Cmd_t shoot_cmd;
 static uint16_t yaw_ecd;
 
-static ReceivePacket *receive_packet = NULL;
-static SendPacket     send_packet;
-const static Ins_t *ins = NULL;
+//static ReceivePacket *receive_packet = NULL;
+//static SendPacket     send_packet;
+//const static Ins_t *ins = NULL;
 
 static void robot_control_task(ULONG thread_input)
 {
@@ -43,13 +43,13 @@ static void robot_control_task(ULONG thread_input)
         /* 遥控器控制输入 */
         RemoteControlSet(&chassis_cmd,&gimbal_cmd,&shoot_cmd);
         
-        send_packet.q[0] = ins->q[0];
-        send_packet.q[1] = ins->q[1];
-        send_packet.q[2] = ins->q[2];
-        send_packet.q[3] = ins->q[3];
-        Module_Vision_Send(&send_packet, TX_NO_WAIT);
+        //send_packet.q[0] = ins->q[0];
+        //send_packet.q[1] = ins->q[1];
+        //send_packet.q[2] = ins->q[2];
+        //send_packet.q[3] = ins->q[3];
+        //Module_Vision_Send(&send_packet, TX_NO_WAIT);
 
-        receive_packet = Module_Vision_Receive();
+        //receive_packet = Module_Vision_Receive();
         /* 云台控制 */
         gimbal_func(&gimbal_cmd, &yaw_ecd);
         /* 底盘控制 */
