@@ -16,7 +16,8 @@ mas_embedded_threadx/
 ├── apps/                          # 应用层：机器人业务代码
 │   ├── config.cmake               # 全局构建配置（选择 ROBOT / BOARD）
 │   ├── app_init.c / app_init.h    # 应用层入口
-│   ├── generate_headers.cmake     # CMake 生成 robot_def.h / module_config.h 脚本
+│   ├── robot_def.h.in             # robot_def.h 生成模板
+│   ├── module_config.h.in         # module_config.h 生成模板（变量 → 宏 映射）
 │   ├── templates/                 # 机器人配置模板
 │   │   ├── robot.cmake            # 各机器人差异配置的参考模板
 │   │   ├── single_board/          # 单板模板代码
@@ -77,7 +78,6 @@ mas_embedded_threadx/
 │
 ├── utils/                         # 通用工具库
 │   ├── ulog/                      # 日志系统（基于 SEGGER RTT）
-│   ├── list/                      # 通用链表
 │   ├── kfifo/                     # 环形缓冲区
 │   └── utils_init.c / .h          # 工具层初始化
 │
@@ -100,12 +100,14 @@ git clone git@github.com:HebutMas/mas_embedded_threadx.git // ssh
 
 ### 选择机器人和板型
 
-编辑 `apps/config.cmake`：
+编辑 `apps/config.cmake` 中的配置值：
 
 ```cmake
-set(ROBOT "sentry")     # hero / engineer / infantry3 / infantry4 / infantry5 / drone / sentry / darts / customcontrol
-set(BOARD "gimbal")     # single / gimbal / chassis
+set(ROBOT "sentry")  # hero / engineer / infantry3 / infantry4 / infantry5 / drone / sentry / darts / customcontrol
+set(BOARD "chassis") # single / gimbal / chassis
 ```
+
+构建任务和手动配置都会直接读取该文件。修改后重新运行编译即可。
 
 ### 编译
 
@@ -126,6 +128,32 @@ cmake --build build/dji_c/Debug --config Debug -j $(nproc)
 ```
 
 > IDE 内置任务一键编译完成后会自动将 `compile_commands.json` 复制到 `build/`，并将 `.elf` 复制到 `build/<board>.elf`，供 `clangd` 和调试器使用。
+
+### ccache 加速编译
+
+如果系统已安装 `ccache`，CMake 会自动使用它缓存 C/C++ 编译结果；不需要额外配置。检查是否生效：
+
+```bash
+ccache --show-stats
+```
+
+### Cppcheck 静态检查
+
+`建议在提交前手动检查一下，查看是否有空指针等问题`
+
+Cppcheck 在 CI 的 push 和合并到 `dev` 分支时自动执行，只检查以下目录：
+
+```text
+board/bsp/  modules/  apps/  utils/
+```
+手动检查一个已经编译过的构建目录：
+```bash
+# 以c板为例，喵板只需要把dji_c换成damiao_h7即可
+cmake --build build/dji_c/Debug --target cppcheck-log
+cat build/dji_c/Debug/cppcheck/cppcheck.log
+```
+如果还没有编译目录，先执行编译：
+日志为空表示检查通过；Cppcheck 返回非零状态表示检查失败。
 
 ### 烧录
 
@@ -170,7 +198,7 @@ find . -name '*.c' -o -name '*.h' | xargs clang-format -i
 2. 在 `modules/CMakeLists.txt` 中添加 `if(MODULE_XXX)` 条件编译块
 3. 在 `modules/module_init.c` 中添加条件初始化代码
 4. 在 `modules/module_config.cmake` 中注册默认参数和模块列表
-5. 在 `apps/generate_headers.cmake` 中添加该模块的参数宏导出（普通宏用 `#define VAR ${VAR}`，可选硬件句柄用 `_gen_cmakedefine`）
+5. 在 `apps/module_config.h.in` 模板中添加该模块的参数宏导出（普通宏用 `#define VAR @VAR@`，可选硬件句柄用 `#cmakedefine VAR @VAR@`）
 6. 在目标机器人的 `apps/<robot>/robot.cmake` 中使能或覆盖配置
 
 **详细规范与示例请参考 [`modules/MODULES.MD`](modules/MODULES.MD)。**

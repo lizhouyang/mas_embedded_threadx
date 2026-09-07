@@ -14,9 +14,12 @@ static void motor_task_entry(ULONG thread_input)
 {
     while (1)
     {
-        Motor_UpdateAll();
-        //PowerControl_Update();
-        Motor_DJI_Flush();
+        /* 控制计算 */
+        Motor_ControlAll();
+        /* 功率限制 */
+        PowerControl_Update();
+        /* 输出应用 */
+        Motor_ApplyAll();
         tx_thread_sleep(2);
     }
 }

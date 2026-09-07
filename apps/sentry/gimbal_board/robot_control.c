@@ -8,6 +8,8 @@
 #include "gimbal_func.h"
 #include "shoot_func.h"
 #include "robot_func.h"
+#include "user_lib.h"
+#include <math.h>
 
 #define LOG_TAG "app_robot_control"
 #define LOG_LVL LOG_LVL_INFO
@@ -31,10 +33,27 @@ static Chassis_Ctrl_Cmd_t        chassis_cmd;
 static GimbalToChassis_cmd_t     chassis_send_cmd;
 static ChassisToGimbal_referee_t chassis_upload_data;
 
+/*
+ * Navigation and RC velocities are expressed in the gimbal frame.  The
+ * chassis board must receive chassis-frame velocities, so do this rotation
+ * once here while the yaw encoder sample is available.
+ */
+static void project_velocity_to_chassis(float gimbal_vx, float gimbal_vy, uint16_t yaw_ecd_value, float *chassis_vx, float *chassis_vy)
+{
+    const float offset_angle = (float)CalcOffsetAngle(yaw_ecd_value) * 360.0f / 8191.0f;
+    const float theta        = offset_angle * DEGREE_2_RAD;
+    const float cos_theta    = cosf(theta);
+    const float sin_theta    = sinf(theta);
+
+    *chassis_vx = gimbal_vx * cos_theta + gimbal_vy * sin_theta;
+    *chassis_vy = -gimbal_vx * sin_theta + gimbal_vy * cos_theta;
+}
+
 static void robot_control_task(ULONG thread_input)
 {
     while (1)
     {
+
         /* 遥控器控制输入 */
         RemoteControlSet(&chassis_cmd, &shoot_cmd, &gimbal_cmd);
 
@@ -46,16 +65,22 @@ static void robot_control_task(ULONG thread_input)
         send_packet.q[3] = ins->q[3];
         Module_Vision_Send(&send_packet, TX_NO_WAIT);
         receive_packet = Module_Vision_Receive();
-
+        /* 自动模式 */
+        gimbal_auto_func(&chassis_cmd, &shoot_cmd, &gimbal_cmd, ins, receive_packet);
         /* 云台控制 */
         gimbal_func(&gimbal_cmd, &yaw_ecd);
         /* 发射机构控制 */
         shoot_func(&shoot_cmd);
 
         /* 板间通讯 */
-        // 速度比例 (-1.0~+1.0) → 板间 int8 (-10~+10)
-        chassis_send_cmd.vx           = (int8_t)(chassis_cmd.vx * 10.0f);
-        chassis_send_cmd.vy           = (int8_t)(chassis_cmd.vy * 10.0f);
+        float chassis_vx;
+        float chassis_vy;
+        project_velocity_to_chassis(chassis_cmd.vx, chassis_cmd.vy, yaw_ecd, &chassis_vx, &chassis_vy);
+        VAL_LIMIT(chassis_vx, -CHASSIS_MAX_SPEED_MPS, CHASSIS_MAX_SPEED_MPS);
+        VAL_LIMIT(chassis_vy, -CHASSIS_MAX_SPEED_MPS, CHASSIS_MAX_SPEED_MPS);
+        // 底盘系 m/s -> 板间 mm/s，底盘端按 1:1 恢复
+        chassis_send_cmd.vx           = (int16_t)lroundf(chassis_vx * 1000.0f);
+        chassis_send_cmd.vy           = (int16_t)lroundf(chassis_vy * 1000.0f);
         chassis_send_cmd.wz           = (int8_t)(chassis_cmd.wz * 10.0f);
         chassis_send_cmd.offset_angle = CalcOffsetAngle(yaw_ecd);
         chassis_send_cmd.chassis_mode = chassis_cmd.chassis_mode;

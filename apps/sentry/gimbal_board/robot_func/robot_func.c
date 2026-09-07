@@ -1,5 +1,8 @@
 #include "robot_func.h"
 #include "module_remote.h"
+#include "module_vision.h"
+#include "module_offline.h"
+#include "module_ins.h"
 #include <stdint.h>
 #include <string.h>
 #include "sentry_def.h"
@@ -30,10 +33,11 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Shoot_Ctrl_Cmd_t *Shoot_
     /* RC 在线 */
     if (state & 0x01)
     {
-        /* 摇杆 → 速度比例 (-1.0 ~ +1.0)
-         * SBUS 通道值: 中位 1024, 上 240, 下 1807 → 零偏后 -784 ~ +783 */
-        Chassis_Ctrl->vx = (float)Module_Remote_get_channel(2) / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
-        Chassis_Ctrl->vy = (float)Module_Remote_get_channel(1) / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS);
+        /* 摇杆 → 云台系速度 (m/s), 与导航速度同单位
+         * SBUS 通道值: 中位 1024, 上 240, 下 1807 → 零偏后 -784 ~ +783
+         * 归一化到 -1.0 ~ +1.0 后乘满杆速度 */
+        Chassis_Ctrl->vx = (float)Module_Remote_get_channel(2) / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS) * CHASSIS_MAX_SPEED_MPS;
+        Chassis_Ctrl->vy = (float)Module_Remote_get_channel(1) / (float)(SBUS_CHX_DOWN - SBUS_CHX_BIAS) * CHASSIS_MAX_SPEED_MPS;
 
         int16_t ch8 = Module_Remote_get_channel(8);
         if (ch8 == SBUS_CHX_UP)
@@ -99,5 +103,67 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Shoot_Ctrl_Cmd_t *Shoot_
         Shoot_Ctrl->friction_mode  = friction_off;
         Shoot_Ctrl->load_mode      = load_stop;
         memset(Chassis_Ctrl, 0, sizeof(*Chassis_Ctrl));
+    }
+}
+
+void gimbal_auto_func(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Shoot_Ctrl_Cmd_t *Shoot_Ctrl, Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl, const Ins_t *Ins,
+                      const ReceivePacket *receive_packet)
+{
+    if (Gimbal_Ctrl == NULL || Gimbal_Ctrl->gimbal_mode != gimbal_auto_mode)
+    {
+        return;
+    }
+    // 检查minipc离线状态
+    if (Module_Vision_Get_offline_state() == STATE_OFFLINE)
+    {
+        // 离线停止搜索
+        Gimbal_Ctrl->auto_search = 2;
+        Shoot_Ctrl->load_mode    = load_stop;
+        return;
+    }
+    // 底盘设为自动模式
+    Chassis_Ctrl->chassis_mode = chassis_automode;
+
+    if (receive_packet != NULL && receive_packet->found != 0)
+    {
+        if (SMALL_YAW_PITCH_MIN_ANGLE * DEGREE_2_RAD < -receive_packet->target_pitch &&
+            -receive_packet->target_pitch < SMALL_YAW_PITCH_MAX_ANGLE * DEGREE_2_RAD)
+        {
+            // 进入跟踪模式
+            Gimbal_Ctrl->auto_search = 0;
+            Gimbal_Ctrl->pitch       = -receive_packet->target_pitch;
+            Gimbal_Ctrl->yaw         = receive_packet->target_yaw + Ins->YawRoundCount * 360.0f * DEGREE_2_RAD;
+            if (receive_packet->fire_advice == 1)
+            {
+                Shoot_Ctrl->load_mode = load_burstfire;
+            }
+            else
+            {
+                Shoot_Ctrl->load_mode = load_stop;
+            }
+        }
+        else
+        {
+            // 进入搜索模式
+            Gimbal_Ctrl->auto_search = 1;
+            Shoot_Ctrl->load_mode    = load_stop;
+        }
+    }
+    else
+    {
+        // 无有效数据进入搜索模式
+        Gimbal_Ctrl->auto_search = 1;
+        Shoot_Ctrl->load_mode    = load_stop;
+    }
+
+    if (receive_packet != NULL && receive_packet->nav_state == 1)
+    {
+        Chassis_Ctrl->vx = receive_packet->vx;
+        Chassis_Ctrl->vy = -receive_packet->vy;
+    }
+    else
+    {
+        Chassis_Ctrl->vx = 0;
+        Chassis_Ctrl->vy = 0;
     }
 }

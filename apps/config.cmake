@@ -1,9 +1,14 @@
 # 机器人 & 板型 配置
-# 在这里修改 ROBOT / BOARD 
+# 在这里选择机器人和板型；配置文件是构建配置的唯一来源
 
 # 目标机器人 & 板型
 set(ROBOT "infantry4") # hero / engineer / infantry3 / infantry4 / infantry5 / drone / sentry / darts / customcontrol
 set(BOARD "single")    # single / gimbal / chassis
+
+# 板型校验
+if(NOT BOARD MATCHES "^(single|gimbal|chassis)$")
+    message(FATAL_ERROR "Unknown BOARD '${BOARD}', expected: single / gimbal / chassis")
+endif()
 
 # 加载默认模块配置
 include(${CMAKE_CURRENT_LIST_DIR}/../modules/module_config.cmake)
@@ -25,7 +30,7 @@ set(CHASSIS_BOARD 0)
 set(${BOARD_UPPER}_BOARD 1)
 
 # 模块开关
-foreach(_m OFFLINE REMOTE BMI088 INS REFEREE SUPERCAP WT606 MOTOR VISION BOARDCOMM)
+foreach(_m OFFLINE REMOTE BMI088 INS REFEREE SUPERCAP WT606 MOTOR VISION BOARDCOMM VOFA)
     set(MODULE_${_m} 0)
 endforeach()
 
