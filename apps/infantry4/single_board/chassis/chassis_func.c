@@ -94,17 +94,17 @@ void chassis_func(Chassis_Ctrl_Cmd_t *chassis_cmd)
             !Module_Offline_get_device_status(chassis_motors[3]->base.offline_dev))
             {if (chassis_cmd->chassis_mode == chassis_zero_force)
             {
-                Motor_DJI_Stop(chassis_motors[0]);
-                Motor_DJI_Stop(chassis_motors[1]);
-                Motor_DJI_Stop(chassis_motors[2]);
-                Motor_DJI_Stop(chassis_motors[3]);
+                Motor_Stop(&chassis_motors[0]->base);
+                Motor_Stop(&chassis_motors[1]->base);
+                Motor_Stop(&chassis_motors[2]->base);
+                Motor_Stop(&chassis_motors[3]->base);
             }
             else
             {
-                Motor_DJI_Start(chassis_motors[0]);
-                Motor_DJI_Start(chassis_motors[1]);
-                Motor_DJI_Start(chassis_motors[2]);
-                Motor_DJI_Start(chassis_motors[3]);
+                Motor_Start(&chassis_motors[0]->base);
+                Motor_Start(&chassis_motors[1]->base);
+                Motor_Start(&chassis_motors[2]->base);
+                Motor_Start(&chassis_motors[3]->base);
             }
 
                 
@@ -140,9 +140,9 @@ void chassis_func(Chassis_Ctrl_Cmd_t *chassis_cmd)
     }
         else
         {
-            Motor_DJI_Stop(chassis_motors[0]);
-            Motor_DJI_Stop(chassis_motors[1]);
-            Motor_DJI_Stop(chassis_motors[2]);
-            Motor_DJI_Stop(chassis_motors[3]);
+            Motor_Stop(&chassis_motors[0]->base);
+            Motor_Stop(&chassis_motors[1]->base);
+            Motor_Stop(&chassis_motors[2]->base);
+            Motor_Stop(&chassis_motors[3]->base);
         }
     }

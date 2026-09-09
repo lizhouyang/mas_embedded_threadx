@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-07-26 11:27:32
+ * @LastEditTime: 2026-09-08 19:28:27
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -27,6 +27,7 @@
 #include "module_ins.h"
 #include "motor_dji.h"
 #include "motor_damiao.h"
+#include "vofa.h"
 #include "user_lib.h"
 #include "bsp_can.h" 
 static DM_Motor_t  *pitch_motor = NULL; // pitch电机指针
@@ -35,7 +36,11 @@ const static Ins_t           *ins        = NULL;
 const static Bmi088_device_t *bmi088_dev = NULL;
 
 static DJI_Motor_t *yaw_motor   = NULL;
-float ff_gravity = 0.007f;
+float ff_gravity = 0.007f;//0.007f;
+
+/* VOFA 上行镜像: p轴扭矩(Nm) / p轴欧拉角(rad), 由 gimbal_func 每周期刷新 */
+static float g_pitch_torque = 0.0f;
+static float g_pitch_euler  = 0.0f;
 
 void gimbal_init(void)
 {
@@ -129,10 +134,18 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
     {
         return;
     }
+
+    /* VOFA 上行注册: p轴扭矩(Nm) / p轴欧拉角(rad) */
+    VOFA_RegisterTx("p_torque", &g_pitch_torque);
+    VOFA_RegisterTx("p_euler",  &g_pitch_euler);
 }
 
 void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
 {
+    /* VOFA 采样: 每周期刷新 p轴扭矩/欧拉角 (TX 线程每 10ms 自动上报) */
+    if (pitch_motor != NULL) g_pitch_torque = pitch_motor->measure.torque;
+    if (ins != NULL)         g_pitch_euler  = ins->euler_rad[1];
+
     if (gimbal_cmd != NULL)
     {
         if (!Module_Offline_get_device_status(yaw_motor->base.offline_dev) 
@@ -140,16 +153,16 @@ void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
 {
     if (gimbal_cmd->gimbal_mode == gimbal_zero_force)
         {
-            Motor_DJI_Stop(yaw_motor);
-            Motor_DM_Stop(pitch_motor);
+            Motor_Stop(&yaw_motor->base);
+            Motor_Stop(&pitch_motor->base);
             
         }
     else
         {
-            Motor_DJI_Start(yaw_motor);
-            Motor_DJI_SetRef(yaw_motor, (gimbal_cmd->yaw * DEGREE_2_RAD));
-           Motor_DM_Start(pitch_motor);
-           Motor_DM_SetRef(pitch_motor, gimbal_cmd->pitch * DEGREE_2_RAD);
+            Motor_Start(&yaw_motor->base);
+            Motor_SetRef(&yaw_motor->base, (gimbal_cmd->yaw * DEGREE_2_RAD));
+           Motor_Start(&pitch_motor->base);
+           Motor_SetRef(&pitch_motor->base, gimbal_cmd->pitch * DEGREE_2_RAD);
         }
 }
     // 数据反馈

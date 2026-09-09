@@ -116,28 +116,28 @@ void shoot_func(Shoot_Ctrl_Cmd_t *shoot_cmd)
         {
             if (shoot_cmd->shoot_mode == shoot_on)//设置enable为1
             {
-                Motor_DJI_Start(friction_l);
-                Motor_DJI_Start(friction_r);
-                 Motor_DJI_Start(loader);  
+                Motor_Start(&friction_l->base);
+                Motor_Start(&friction_r->base);
+                 Motor_Start(&loader->base);  
                 
                 // 确定是否开启摩擦轮
                 if (shoot_cmd->friction_mode == friction_on)
                 {
                     // 设置摩擦轮转速（左轮6800RPM，右轮+6800RPM，反向旋转夹弹）
-                    Motor_DJI_SetRef(friction_l, 6800 * RPM_2_RAD_PER_SEC);
-                    Motor_DJI_SetRef(friction_r, -6800 * RPM_2_RAD_PER_SEC);
+                    Motor_SetRef(&friction_l->base, 6800 * RPM_2_RAD_PER_SEC);
+                    Motor_SetRef(&friction_r->base, -6800 * RPM_2_RAD_PER_SEC);
                     
                     // 拨盘控制
                     switch (shoot_cmd->load_mode)
                     {
                     case load_stop:
-                        Motor_DJI_SetRef(loader, 0);
+                        Motor_SetRef(&loader->base, 0);
                         break;
                     case load_1_bullet:
-                        Motor_DJI_SetRef(loader, -4000 * RPM_2_RAD_PER_SEC);
+                        Motor_SetRef(&loader->base, -4000 * RPM_2_RAD_PER_SEC);
                         break;
                     case load_burstfire:
-                        Motor_DJI_SetRef(loader, -8000 * RPM_2_RAD_PER_SEC);
+                        Motor_SetRef(&loader->base, -8000 * RPM_2_RAD_PER_SEC);
                         break;
                     default:
                         break;
@@ -145,32 +145,32 @@ void shoot_func(Shoot_Ctrl_Cmd_t *shoot_cmd)
                 }
                 else // 关闭摩擦轮
                 {
-                    Motor_DJI_SetRef(friction_l, 0);
-                    Motor_DJI_SetRef(friction_r, 0);
-                     Motor_DJI_SetRef(loader, 0);  
+                    Motor_SetRef(&friction_l->base, 0);
+                    Motor_SetRef(&friction_r->base, 0);
+                     Motor_SetRef(&loader->base, 0);  
                 }
             }
             else//不为发射模式，设置参考值后失能所有电机
             {
-                Motor_DJI_SetRef(friction_l, 0);
-                Motor_DJI_SetRef(friction_r, 0);
-                Motor_DJI_SetRef(loader, 0);  
-                Motor_DJI_Stop(friction_l);
-                Motor_DJI_Stop(friction_r);
-                Motor_DJI_Stop(loader); 
+                Motor_SetRef(&friction_l->base, 0);
+                Motor_SetRef(&friction_r->base, 0);
+                Motor_SetRef(&loader->base, 0);  
+                Motor_Stop(&friction_l->base);
+                Motor_Stop(&friction_r->base);
+                Motor_Stop(&loader->base); 
             }
         }
         else//任一电机掉线，失能所有电机
         {
-            Motor_DJI_Stop(friction_l);
-            Motor_DJI_Stop(friction_r);
-            Motor_DJI_Stop(loader);  
+            Motor_Stop(&friction_l->base);
+            Motor_Stop(&friction_r->base);
+            Motor_Stop(&loader->base);  
         }
     }
     else//接受不到指令，失能所有电机
     {
-        Motor_DJI_Stop(friction_l);
-        Motor_DJI_Stop(friction_r);
-        Motor_DJI_Stop(loader);  
+        Motor_Stop(&friction_l->base);
+        Motor_Stop(&friction_r->base);
+        Motor_Stop(&loader->base);  
     }
 }
