@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-08 19:28:27
+ * @LastEditTime: 2026-09-09 21:55:02
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -36,7 +36,7 @@ const static Ins_t           *ins        = NULL;
 const static Bmi088_device_t *bmi088_dev = NULL;
 
 static DJI_Motor_t *yaw_motor   = NULL;
-float ff_gravity = 0.007f;//0.007f;
+float ff_gravity = 0.008f;//0.007f;
 
 /* VOFA 上行镜像: p轴扭矩(Nm) / p轴欧拉角(rad), 由 gimbal_func 每周期刷新 */
 static float g_pitch_torque = 0.0f;
@@ -75,7 +75,7 @@ void gimbal_init(void)
                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[2],
                                    .lqr_init =
                                        {
-                                           .K         = {5.47f, 0.56f},
+                                           .K         = {20.0f, 0.2f},//5.8 0.6
                                            .state_dim = 2,
                                        }},
         .setting_init_config =
