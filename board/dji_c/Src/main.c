@@ -123,6 +123,7 @@ int main(void)
     // MX_IWDG_Init();
     MX_USB_OTG_FS_PCD_Init();
     /* USER CODE BEGIN 2 */
+    HAL_Delay(1000);
     tx_kernel_enter();
     /* USER CODE END 2 */
 

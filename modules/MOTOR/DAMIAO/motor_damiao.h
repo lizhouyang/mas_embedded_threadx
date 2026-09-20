@@ -73,7 +73,8 @@ typedef struct
     Motor_Base               base;    /* [必须首字段] 公共基类 */
     DM_Motor_Measure_s       measure; /* 达妙测量数据 */
     uint32_t                 mode_type;
-    const DM_Motor_Params_t *params; /* 电机参数配置指针 */
+    uint32_t                 last_enable_ms; /* 上次周期性"清错+使能"的时间戳 */
+    const DM_Motor_Params_t *params;         /* 电机参数配置指针 */
 } DM_Motor_t;
 
 /**

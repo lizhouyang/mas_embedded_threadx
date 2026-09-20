@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 20:21:52
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-09 19:31:51
+ * @LastEditTime: 2026-09-11 20:50:46
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_func\robot_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置:
  * https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -67,7 +67,7 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
         {
             Gimbal_Ctrl->gimbal_mode = gimbal_gyro_mode;
             /* 左摇杆 → yaw/pitch 微调 (仅手动档生效, 视觉档云台由视觉接管) */
-            Gimbal_Ctrl->yaw -= 0.0003f * (float)(ch[4]);
+            Gimbal_Ctrl->yaw -= 0.00015f * (float)(ch[4]);
             Gimbal_Ctrl->pitch -= 0.001f * (float)(ch[3]);
             VAL_LIMIT(Gimbal_Ctrl->pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
         }

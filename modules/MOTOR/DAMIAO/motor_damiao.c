@@ -181,10 +181,30 @@ static void psi_ctrl(DM_Motor_t *motor, float pos, float vel, float current)
     BSP_CAN_SendMessage(&msg);
 }
 
+/* 周期性"使能"兜底:
+ * 达妙电机上电后会先自发回几帧, 若在它自身的通信超时窗口内没收到有效控制帧, 就会停止
+ * 上报; 而使能命令原本只在 Motor_DM_Init 里发过一次, 之后没有补救机会, 只能重新烧录/上电。
+ * 这里每 DM_ENABLE_INTERVAL_MS 重发一次使能, 把电机叫回来。
+ * 只发 0xFC(使能), 不发 0xFB(清错): 部分固件下清错会让电机回到未使能状态(必须紧跟一条使能),
+ * 而且 0xFB 会把过温/过流/过载等真实故障码一并清掉。 */
+#define DM_ENABLE_INTERVAL_MS 500U
+
+static void dm_periodic_enable(DM_Motor_t *motor)
+{
+    uint32_t now = (uint32_t)BSP_DWT_GetTimeline_ms();
+    if (now - motor->last_enable_ms < DM_ENABLE_INTERVAL_MS) return;
+    motor->last_enable_ms = now;
+
+    Motor_DM_Cmd(motor, DM_CMD_MOTOR_START); /* 0xFC 使能 */
+}
+
 static void dm_apply(Motor_Base *base)
 {
     DM_Motor_t *motor   = MOTOR_GET_DERIVED(base, DM_Motor_t);
     uint8_t     offline = (base->offline_dev != NULL && Module_Offline_get_device_status(base->offline_dev) == STATE_OFFLINE);
+
+    /* 每 500ms 重新使能一次 (放在状态判断之前, 在线/离线都会发) */
+    dm_periodic_enable(motor);
 
     if (offline || base->setting.enableflag == 0)
     {

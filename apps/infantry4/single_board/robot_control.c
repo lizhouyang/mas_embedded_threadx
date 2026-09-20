@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 18:55:11
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-11 16:50:01
+ * @LastEditTime: 2026-09-11 20:08:14
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_control.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,6 +10,7 @@
 #include "module_ins.h"
 #include "module_vision.h"
 #include "module_offline.h"
+#include "module_remote.h"
 #include "tx_api.h"
 #include "bsp_def.h"
 #include "infantry_def.h"
@@ -18,6 +19,7 @@
 #include "chassis_func.h"
 #include "robot_func.h"
 #include "user_lib.h"
+#include"motor_damiao.h"
 
 static TX_THREAD                  robot_control_thread;
 APPS_STACK_SECTION static uint8_t robot_control_thread_stack[1024];
@@ -35,7 +37,7 @@ const static Ins_t *ins = NULL;
 /**
  * @brief 视觉瞄准: 仅在 gimbal_auto_mode 下生效, 用上位机目标角度更新云台 yaw/pitch
  * - yaw:   上位机给 -180°~180°(rad), 对齐到 INS 连续累计角(可多圈)的最近等效值, 避免跳变
- * - pitch: 上位机目标正方向与云台上仰相反, 取负后按机械限位限幅
+ * - pitch: 上位机给目标俯仰角(rad, 低头为正), 与本车 pitch 指令同号, 直接转度后按机械限位限幅
  * - 视觉离线或未识别到目标: 保持当前指向, 等待视觉重新捕获
  */
 static void GimbalVisionAuto(Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl)
@@ -52,7 +54,7 @@ static void GimbalVisionAuto(Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl)
 
     if (receive_packet != NULL && receive_packet->found != 0)
     {
-        float pitch_deg = -receive_packet->target_pitch * RAD_2_DEGREE;
+        float pitch_deg = receive_packet->target_pitch * RAD_2_DEGREE;
         VAL_LIMIT(pitch_deg, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
         Gimbal_Ctrl->pitch = pitch_deg;
 
@@ -83,18 +85,37 @@ static void robot_control_task(ULONG thread_input)
         /* 视觉模式: 云台由视觉控制 */
         GimbalVisionAuto(&gimbal_cmd);
 
+        /* 视觉模式: 视觉建议开火且 ch5(摩擦轮)在下档时供弹, 其余情况一律关闭发射机构 */
+        if (gimbal_cmd.gimbal_mode == gimbal_auto_mode)
+        {
+            int16_t ch5 = Module_Remote_get_channel(5);
+            if (receive_packet != NULL && receive_packet->fire_advice && ch5 > 1500)
+            {
+                shoot_cmd.shoot_mode    = shoot_on;
+                shoot_cmd.friction_mode = friction_on;
+                shoot_cmd.load_mode     = load_1_bullet;
+            }
+            else
+            {
+                shoot_cmd.shoot_mode    = shoot_off;
+                shoot_cmd.friction_mode = friction_off;
+                shoot_cmd.load_mode     = load_stop;
+            }
+        }
+
         /* 云台控制 */
         gimbal_func(&gimbal_cmd, &yaw_ecd);
         /* 发射机构控制 */
         shoot_func(&shoot_cmd);
         /* 底盘控制 */
-        chassis_cmd.offset_angle = CalcOffsetAngle(yaw_ecd) * 360.0f / 8191.0f;
-        chassis_cmd.vx           = chassis_cmd.vx * CHASSIS_MAX_SPEED_MPS;
-        chassis_cmd.vy           = chassis_cmd.vy * CHASSIS_MAX_SPEED_MPS;
-        chassis_cmd.wz           = chassis_cmd.wz * CHASSIS_MAX_SPEED_MPS;
-        chassis_func(&chassis_cmd);
+        //chassis_cmd.offset_angle = CalcOffsetAngle(yaw_ecd) * 360.0f / 8191.0f;
+       // chassis_cmd.vx           = chassis_cmd.vx * CHASSIS_MAX_SPEED_MPS;
+        //chassis_cmd.vy           = chassis_cmd.vy * CHASSIS_MAX_SPEED_MPS;
+        //chassis_cmd.wz           = chassis_cmd.wz * CHASSIS_MAX_SPEED_MPS;
+        //chassis_func(&chassis_cmd);
 
         tx_thread_sleep(2);
+
     }
 }
 
