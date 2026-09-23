@@ -108,11 +108,11 @@ static void robot_control_task(ULONG thread_input)
         /* 发射机构控制 */
         shoot_func(&shoot_cmd);
         /* 底盘控制 */
-        //chassis_cmd.offset_angle = CalcOffsetAngle(yaw_ecd) * 360.0f / 8191.0f;
-       // chassis_cmd.vx           = chassis_cmd.vx * CHASSIS_MAX_SPEED_MPS;
-        //chassis_cmd.vy           = chassis_cmd.vy * CHASSIS_MAX_SPEED_MPS;
-        //chassis_cmd.wz           = chassis_cmd.wz * CHASSIS_MAX_SPEED_MPS;
-        //chassis_func(&chassis_cmd);
+        chassis_cmd.offset_angle = CalcOffsetAngle(yaw_ecd) * 360.0f / 8191.0f;
+        chassis_cmd.vx           = chassis_cmd.vx * CHASSIS_MAX_SPEED_MPS;
+        chassis_cmd.vy           = chassis_cmd.vy * CHASSIS_MAX_SPEED_MPS;
+        chassis_cmd.wz           = chassis_cmd.wz * CHASSIS_MAX_SPEED_MPS;
+        chassis_func(&chassis_cmd);
 
         tx_thread_sleep(2);
 

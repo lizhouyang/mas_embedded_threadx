@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 20:21:52
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-11 20:50:46
+ * @LastEditTime: 2026-09-22 15:04:02
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_func\robot_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置:
  * https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -45,7 +45,7 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
         ch[8] = Module_Remote_get_channel(8);
 
         /* ── ch8 底盘模式: 向上=关闭(无力), 中间=底盘跟随云台, 向下=自转 ── */
-        if (ch[8] < 500) // 向上
+        /*if (ch[8] < 500) // 向上
         {
             Chassis_Ctrl->chassis_mode = chassis_zero_force;
         }
@@ -56,19 +56,28 @@ void RemoteControlSet(Chassis_Ctrl_Cmd_t *Chassis_Ctrl, Gimbal_Ctrl_Cmd_t *Gimba
         else // 向下
         {
             Chassis_Ctrl->chassis_mode = chassis_rotate;
+        }*/
+if (ch[8] <= 1500) // 向上
+        {
+            Chassis_Ctrl->chassis_mode = chassis_follow_gimbal_yaw;
         }
-
+        
+        else // 向下
+        {
+           Chassis_Ctrl->chassis_mode = chassis_rotate;
+        }
         /* ── ch6 云台模式(兼总断电): 向上=云台底盘都无力, 中间=云台由遥控器控制, 向下=视觉控制 ── */
-        if (ch[6] < 500) // 向上, 云台与底盘都无力
+        /*if (ch[6] < 500) // 向上, 云台与底盘都无力
         {
             Gimbal_Ctrl->gimbal_mode = gimbal_zero_force;
-        }
-        else if (ch[6] <= 1500) // 中间, 云台由遥控器摇杆控制
+        }*/
+        //else if (ch[6] <= 1500) // 中间, 云台由遥控器摇杆控制
+        if (ch[6] <= 1500) 
         {
             Gimbal_Ctrl->gimbal_mode = gimbal_gyro_mode;
             /* 左摇杆 → yaw/pitch 微调 (仅手动档生效, 视觉档云台由视觉接管) */
-            Gimbal_Ctrl->yaw -= 0.00015f * (float)(ch[4]);
-            Gimbal_Ctrl->pitch -= 0.001f * (float)(ch[3]);
+            Gimbal_Ctrl->yaw -= 0.0003f * (float)(ch[4]);
+            Gimbal_Ctrl->pitch -= 0.0005f * (float)(ch[3]);
             VAL_LIMIT(Gimbal_Ctrl->pitch, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
         }
         else // 向下, 视觉控制: 切到 auto 模式, 云台目标由控制任务内的视觉数据更新

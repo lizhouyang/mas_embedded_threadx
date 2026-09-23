@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-18 20:30:12
+ * @LastEditTime: 2026-09-20 16:56:42
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -91,7 +91,7 @@ void gimbal_init(void)
                                 .other_speed_feedback_ptr = &bmi088_dev->gyro[2],
                                    .lqr_init =
                                        {
-                                           .K         = {10.0f, 0.86f},//5.8 0.6
+                                           .K         = {10.0f, 0.83},//5.8 0.6
                                            .state_dim = 2,
                                        }},
         .setting_init_config =
@@ -102,7 +102,7 @@ void gimbal_init(void)
                 .speed_feedback_source = 1,
                 .loop_type             = ANGLE_LOOP,
             },
-        .motor_init_info = {.motor_type = GM6020_CURRENT, .gear_ratio = 1, .max_torque = 2.223f, .torque_constant = 0.741f}};
+        .motor_init_info = {.motor_type = GM6020_CURRENT, .gear_ratio = 1, .max_torque = 2.000f, .torque_constant = 0.741f}};
     yaw_motor = Motor_DJI_Init(&yaw_config);
     if (yaw_motor == NULL)
     {
