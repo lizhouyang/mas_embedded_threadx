@@ -61,7 +61,7 @@ mas_embedded_threadx/
 │   ├── INS/                       # 惯性导航系统
 │   ├── REFEREE/                   # 裁判系统通信
 │   ├── MOTOR/                     # 电机控制
-│   ├── VISION/                    # 视觉通信模块
+│   ├── PCCOMM/                    # 上位机通信模块
 │   ├── BOARDCOMM/                 # 板间通信
 │   ├── SuperCap/                  # 超级电容管理
 │   ├── WT606/                     # WT606 模块
@@ -81,8 +81,9 @@ mas_embedded_threadx/
 │   ├── kfifo/                     # 环形缓冲区
 │   └── utils_init.c / .h          # 工具层初始化
 │
-├── CMSIS-DSP/                     # ARM CMSIS-DSP 数学库
-├── CherryUSB/                     # CherryUSB 设备协议栈
+├── 3rdparty/                      # 第三方依赖（裁剪后仅保留实际使用的部分）
+│   ├── CMSIS-DSP/                 # ARM CMSIS-DSP 数学库（sin/cos/sqrt + f32 矩阵）
+│   └── CherryUSB/                 # CherryUSB 设备协议栈（DWC2 + CDC ACM）
 │
 ├── .clang-format                  # 代码格式化配置
 ├── .clang-tidy                    # 静态检查配置
