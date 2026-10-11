@@ -2,13 +2,13 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 18:55:11
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-11 20:08:14
+ * @LastEditTime: 2026-10-11 19:03:42
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\robot_control.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 #include "robot_control.h"
 #include "module_ins.h"
-#include "module_vision.h"
+#include "module_pccomm.h"
 #include "module_offline.h"
 #include "module_remote.h"
 #include "tx_api.h"
@@ -31,6 +31,7 @@ static uint16_t           yaw_ecd;
 // 视觉(上位机)数据
 static ReceivePacket *receive_packet = NULL;
 static SendPacket     send_packet;
+//static NavSendPacket  nav_send_packet;//裁判系统
 // 姿态角数据
 const static Ins_t *ins = NULL;
 
@@ -47,12 +48,12 @@ static void GimbalVisionAuto(Gimbal_Ctrl_Cmd_t *Gimbal_Ctrl)
         return;
     }
 
-    if (Module_Vision_Get_offline_state() == STATE_OFFLINE)
+    if (Module_PCComm_Get_offline_state() == STATE_OFFLINE)
     {
         return;
     }
 
-    if (receive_packet != NULL && receive_packet->found != 0)
+    if (receive_packet != NULL && receive_packet->fire_advice != 0)
     {
         float pitch_deg = receive_packet->target_pitch * RAD_2_DEGREE;
         VAL_LIMIT(pitch_deg, PITCH_MIN_ANGLE, PITCH_MAX_ANGLE);
@@ -75,13 +76,15 @@ static void robot_control_task(ULONG thread_input)
         RemoteControlSet(&chassis_cmd, &gimbal_cmd, &shoot_cmd);
 
         /* 视觉数据交换: 上发云台姿态四元数, 接收目标角度 */
-        send_packet.mode = 0; //蓝1红0
+       /* 虚拟串口 */
+        send_packet.mode = 0;//蓝一红零
         send_packet.q[0] = ins->q[0];
         send_packet.q[1] = ins->q[1];
         send_packet.q[2] = ins->q[2];
         send_packet.q[3] = ins->q[3];
-        Module_Vision_Send(&send_packet, TX_NO_WAIT);
-        receive_packet = Module_Vision_Receive();
+        Module_PCComm_Send(&send_packet, TX_NO_WAIT);
+        receive_packet = Module_PCComm_Receive();
+       // const NavPacket *nav_packet = Module_PCComm_Receive_Nav();
         /* 视觉模式: 云台由视觉控制 */
         GimbalVisionAuto(&gimbal_cmd);
 
@@ -119,7 +122,7 @@ static void robot_control_task(ULONG thread_input)
     }
 }
 
-void robot_control_init(void)
+int robot_control_init(void)
 {
     UINT status;
 
@@ -127,7 +130,7 @@ void robot_control_init(void)
     ins = Module_INS_get();
     if (ins == NULL)
     {
-        return;
+        return -1;
     }
 
     gimbal_init();
@@ -137,6 +140,7 @@ void robot_control_init(void)
                               TX_NO_TIME_SLICE, TX_AUTO_START);
     if (status != TX_SUCCESS)
     {
-        return;
+        return -1;
     }
+    return 0;
 }
