@@ -19,7 +19,7 @@
 #include "chassis_func.h"
 #include "robot_func.h"
 #include "user_lib.h"
-#include"motor_damiao.h"
+
 
 static TX_THREAD                  robot_control_thread;
 APPS_STACK_SECTION static uint8_t robot_control_thread_stack[1024];

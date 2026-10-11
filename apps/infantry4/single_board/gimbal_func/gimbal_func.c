@@ -2,7 +2,7 @@
  * @Author: 陈冠宁 635936689@qq.com
  * @Date: 2026-07-17 19:15:45
  * @LastEditors: 陈冠宁 635936689@qq.com
- * @LastEditTime: 2026-09-20 16:56:42
+ * @LastEditTime: 2026-09-23 18:52:19
  * @FilePath: \mas_embedded_threadx\apps\infantry4\single_board\gimbal_func\gimbal_func.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -30,12 +30,16 @@
 #include "vofa.h"
 #include "user_lib.h"
 #include "bsp_can.h" 
+#include "tx_api.h"
+#include "bsp_def.h"   
 static DM_Motor_t  *pitch_motor = NULL; // pitch电机指针
 // 姿态角数据
 const static Ins_t           *ins        = NULL;
 const static Bmi088_device_t *bmi088_dev = NULL;
 
 static DJI_Motor_t *yaw_motor   = NULL;
+static TX_THREAD                  dm_enable_thread;
+APPS_STACK_SECTION static uint8_t dm_enable_thread_stack[1024];
 
 /* VOFA 上行镜像: p轴扭矩(Nm) / p轴欧拉角(rad), 由 gimbal_func 每周期刷新 */
 static float g_pitch_torque = 0.0f;
@@ -51,7 +55,15 @@ static float g_pitch_euler  = 0.0f;
  *       -15°~+35° 全行程, 建议改为 cos 形式 0.9303·cos(θ+0.876) 并补测两侧端点。 */
 #define PITCH_FF_GRAV_K (-0.7146f) /* Nm/rad */
 #define PITCH_FF_GRAV_C (0.5956f)  /* Nm     */
-
+/* DM4310 keep-alive: 定时重发 START 防止 MIT 模式自动失能 */
+static void dm_enable_thread_task(ULONG thread_input)
+{
+    while (1)
+    {
+        tx_thread_sleep(800);
+        Motor_DM_Cmd(pitch_motor, DM_CMD_MOTOR_START);
+    }
+}
 static void pitch_gravity_feedforward(void)
 {
     if (pitch_motor == NULL || ins == NULL) return;
@@ -145,21 +157,30 @@ Motor_Init_Config_s pitch_config = {.offline_init_config =
                                             },
                                         .motor_init_info = {.motor_type = DM4310, .gear_ratio = 10, .max_torque = 10, .torque_constant = 0.093f}};
     pitch_motor = Motor_DM_Init(&pitch_config, DM_MIT_MODE);
+     UINT status;
     if (pitch_motor == NULL)
     {
         return;
     }
-    /* 初值, 之后由 pitch_gravity_feedforward() 每周期更新 */
+    else
+    {
+        status = tx_thread_create(&dm_enable_thread, "dm_enable_thread", dm_enable_thread_task, 0, dm_enable_thread_stack, 256, 11, 11,
+                              TX_NO_TIME_SLICE, TX_AUTO_START);
+    }
+    if (status != TX_SUCCESS)
+    {
+        return;
+    }
     pitch_motor->base.controller.feedforward_torque = PITCH_FF_GRAV_C;
 
     /* VOFA 上行注册: p轴扭矩(Nm) / p轴欧拉角(rad) */
     VOFA_RegisterTx("p_torque", &g_pitch_torque);
     VOFA_RegisterTx("p_euler",  &g_pitch_euler);
 }
-int count=0;
+
 void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
 {
-    count++;
+    
     /* VOFA 采样: 每周期刷新 p轴扭矩/欧拉角 (TX 线程每 10ms 自动上报) */
     if (pitch_motor != NULL) g_pitch_torque = pitch_motor->measure.torque;
     if (ins != NULL)         g_pitch_euler  = ins->euler_rad[1];
@@ -181,7 +202,7 @@ void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
             Motor_SetRef(&yaw_motor->base, (gimbal_cmd->yaw * DEGREE_2_RAD));
            Motor_Start(&pitch_motor->base);
            Motor_SetRef(&pitch_motor->base, gimbal_cmd->pitch * DEGREE_2_RAD);
-           pitch_gravity_feedforward();   /* 重力前馈: 消掉稳态误差与死区 */
+           pitch_gravity_feedforward();   /* 重力前馈: */
         }
 }
     // 数据反馈
@@ -190,8 +211,6 @@ void gimbal_func(Gimbal_Ctrl_Cmd_t *gimbal_cmd, uint16_t *yaw_ecd)
         *yaw_ecd = yaw_motor->measure.ecd;
     }
     }
-            if(count==250){
-            Motor_DM_Cmd(pitch_motor, DM_CMD_MOTOR_START); 
-            count=0;
-        }
+          
 }
+
